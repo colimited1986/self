@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lontara Carousel Weaver</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root{
+    --ink-0:#FBF7EE;
+    --ink-1:#FFFFFF;
+    --ink-2:#E8DFCB;
+    --paper:#2E2A21;
+    --paper-dim:#8A8171;
+    --ember:#BD6B2E;
+    --ember-soft:#E3A46B;
+    --ok:#5C8A52;
+    --err:#B5573F;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'IBM Plex Sans', system-ui, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--ink-0);color:var(--paper);font-family:var(--sans);}
+  body{min-height:100vh;}
+  a{color:var(--ember);}
+
+  .shell{
+    max-width:1180px;
+    margin:0 auto;
+    padding:36px 20px 80px;
+  }
+
+  header.masthead{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:16px;
+    border-bottom:1px solid var(--ink-2);
+    padding-bottom:20px;
+    margin-bottom:32px;
+    flex-wrap:wrap;
+  }
+  header.masthead h1{
+    font-family:var(--serif);
+    font-weight:600;
+    font-size:clamp(28px,4vw,40px);
+    margin:0;
+    letter-spacing:0.2px;
+  }
+  header.masthead p{
+    margin:6px 0 0;
+    color:var(--paper-dim);
+    font-size:14px;
+    max-width:46ch;
+    font-family:var(--serif);
+    font-style:italic;
+  }
+
+  .layout{
+    display:grid;
+    grid-template-columns:360px 1fr;
+    gap:28px;
+    align-items:start;
+  }
+  @media (max-width:860px){
+    .layout{grid-template-columns:1fr;}
+  }
+
+  .panel{
+    background:var(--ink-1);
+    border:1px solid var(--ink-2);
+    border-radius:4px;
+    padding:22px;
+  }
+  .panel + .panel{margin-top:18px;}
+
+  .field{margin-bottom:16px;}
+  .field:last-child{margin-bottom:0;}
+  .field label{
+    display:block;
+    font-size:12.5px;
+    color:var(--paper-dim);
+    margin-bottom:6px;
+  }
+  .field input, .field textarea, .field select{
+    width:100%;
+    background:var(--ink-0);
+    border:1px solid var(--ink-2);
+    color:var(--paper);
+    border-radius:3px;
+    padding:10px 11px;
+    font-family:var(--sans);
+    font-size:14px;
+  }
+  .field textarea{
+    resize:vertical;
+    min-height:140px;
+    line-height:1.5;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus{
+    outline:1px solid var(--ember);
+    outline-offset:0;
+  }
+  .field .hint{color:var(--paper-dim);font-size:11.5px;margin-top:5px;}
+
+  .row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+  button{
+    font-family:var(--sans);
+    font-weight:500;
+    font-size:14px;
+    border-radius:3px;
+    border:1px solid transparent;
+    cursor:pointer;
+    padding:11px 16px;
+  }
+  button.primary{
+    background:var(--ember);
+    color:var(--ink-0);
+    width:100%;
+  }
+  button.primary:hover{background:#D68A5B;}
+  button.primary:disabled{background:var(--ink-2);color:var(--paper-dim);cursor:not-allowed;}
+  button.ghost{
+    background:transparent;
+    border:1px solid var(--ink-2);
+    color:var(--paper);
+  }
+  button.ghost:hover{border-color:var(--ember-soft);}
+  button.small{padding:6px 10px;font-size:12.5px;}
+
+  .status{
+    margin-top:14px;
+    font-size:13px;
+    min-height:18px;
+  }
+  .status.err{color:var(--err);}
+  .status.ok{color:var(--ok);}
+  .status.busy{color:var(--paper-dim);}
+
+  .empty{
+    border:1px dashed var(--ink-2);
+    border-radius:4px;
+    padding:60px 24px;
+    text-align:center;
+    color:var(--paper-dim);
+  }
+  .empty h3{
+    font-family:var(--serif);
+    color:var(--paper);
+    font-weight:600;
+    font-size:20px;
+    margin:0 0 8px;
+  }
+  .empty p{margin:0;font-size:13.5px;max-width:40ch;margin:0 auto;}
+
+  .concept-title{
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:19px;
+    color:var(--paper-dim);
+    margin:0 0 20px;
+  }
+
+  .slides{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+    gap:20px;
+  }
+
+  .slide-card{
+    background:var(--ink-1);
+    border:1px solid var(--ink-2);
+    border-radius:4px;
+    overflow:hidden;
+  }
+  .slide-frame{
+    position:relative;
+    aspect-ratio:9/16;
+    background:var(--ink-2);
+    overflow:hidden;
+  }
+  .slide-frame img{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+  }
+  .slide-frame .veil{
+    position:absolute;
+    inset:0;
+    background:linear-gradient(to top, rgba(10,9,6,0.82) 0%, rgba(10,9,6,0.35) 42%, rgba(10,9,6,0.05) 65%);
+  }
+  .slide-frame .placeholder{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--paper-dim);
+    font-size:12px;
+    text-align:center;
+    padding:20px;
+  }
+  .slide-frame .num{
+    position:absolute;
+    top:12px;
+    left:12px;
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:13px;
+    color:rgba(239,230,214,0.75);
+  }
+  .slide-frame .text-block{
+    position:absolute;
+    left:20px;
+    right:20px;
+    bottom:22px;
+  }
+  .slide-frame .text-main{
+    font-family:var(--serif);
+    font-size:19px;
+    line-height:1.4;
+    margin:0 0 6px;
+  }
+  .slide-frame .text-sub{
+    font-family:var(--sans);
+    font-size:12px;
+    color:rgba(239,230,214,0.7);
+    margin:0;
+  }
+  .slide-meta{
+    padding:12px 14px 14px;
+  }
+  .slide-meta .type{
+    font-size:11px;
+    color:var(--paper-dim);
+    margin-bottom:8px;
+  }
+  .slide-actions{
+    display:flex;
+    gap:8px;
+  }
+  .slide-actions button{flex:1;}
+
+  .toolbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .toolbar-buttons{display:flex;gap:10px;flex-wrap:wrap;}
+
+  .history-item{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:10px 0;
+    border-top:1px solid var(--ink-2);
+  }
+  .history-item:first-child{border-top:none;}
+  .history-item .info{min-width:0;}
+  .history-item .info .h-title{
+    font-family:var(--serif);
+    font-size:14px;
+    color:var(--paper);
+    margin:0 0 2px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .history-item .info .h-date{
+    font-size:11px;
+    color:var(--paper-dim);
+  }
+  .history-item .h-actions{
+    display:flex;
+    gap:6px;
+    flex-shrink:0;
+  }
+  .history-empty{
+    color:var(--paper-dim);
+    font-size:13px;
+  }
+
+  ::selection{background:var(--ember-soft);}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <header class="masthead">
+    <div>
+      <h1>Lontara Carousel Weaver</h1>
+      <p>Dari curhatan mentah menjadi naskah carousel 5 slide, lengkap dengan gambar.</p>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <div>
+      <div class="panel">
+        <div class="field">
+          <label for="storyInput">Cerita atau pemikiran kasar kamu</label>
+          <textarea id="storyInput" placeholder="Tulis apa yang lagi kamu pikirkan, tanpa perlu rapi..."></textarea>
+        </div>
+        <div class="field">
+          <button class="primary" id="btnGenerateScript">Buat Naskah 5 Slide</button>
+        </div>
+        <div class="status" id="scriptStatus"></div>
+      </div>
+
+      <div class="panel">
+        <div class="field">
+          <label for="sumopodKey">Sumopod API key</label>
+          <input type="password" id="sumopodKey" placeholder="sk-...">
+        </div>
+        <div class="field">
+          <label for="sumopodModel">Model teks</label>
+          <input type="text" id="sumopodModel" value="gpt-4o-mini">
+        </div>
+        <div class="field">
+          <label for="falKey">Fal.ai API key</label>
+          <input type="password" id="falKey" placeholder="key_id:key_secret">
+        </div>
+        <div class="field">
+          <label for="falModel">Model gambar (endpoint fal.run)</label>
+          <input type="text" id="falModel" value="fal-ai/flux-pro/v1.1">
+          <div class="hint">Contoh lain: fal-ai/flux/dev, fal-ai/flux/schnell</div>
+        </div>
+        <div class="field">
+          <button class="ghost" id="btnSaveSettings" style="width:100%;">Simpan Pengaturan</button>
+        </div>
+        <div class="status" id="settingsStatus"></div>
+        <div class="hint">Key disimpan hanya di browser ini (localStorage), tidak dikirim ke mana pun selain Sumopod/Fal.ai.</div>
+      </div>
+
+      <div class="panel">
+        <div class="toolbar" style="margin-bottom:14px;">
+          <label style="font-size:12.5px;color:var(--paper-dim);">Riwayat Proyek</label>
+          <button class="ghost small" id="btnClearHistory">Hapus Semua</button>
+        </div>
+        <div id="historyList"></div>
+      </div>
+    </div>
+
+    <div>
+      <div id="resultArea">
+        <div class="empty">
+          <h3>Belum ada naskah</h3>
+          <p>Isi cerita di panel kiri lalu tekan "Buat Naskah 5 Slide". Hasilnya akan muncul di sini, slide demi slide.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const SYSTEM_PROMPT = `Anda adalah seorang ahli strategi konten media sosial dan penulis narasi refleksi diri (self-improvement/Stoikisme). Tugas Anda adalah mengubah pengalaman atau pemikiran personal pengguna yang berantakan menjadi naskah carousel 5 slide (format 9:16) yang emosional, puitis, dan memiliki tingkat retensi baca yang sangat tinggi.
+
+### ATURAN UTAMA (STRICT RULES) ###
+
+1. BAHASA & ZERO TYPO:
+   - Gunakan Bahasa Indonesia baku yang santai, puitis, dan menyentuh.
+   - Gunakan sudut pandang orang pertama ("aku").
+   - WAJIB memeriksa ulang ejaan. Dilarang keras ada kesalahan ketik (typo), kata terpotong, atau tata bahasa yang membingungkan.
+2. NADA & GAYA PENULISAN:
+   - Jujur, rentan (vulnerable), dan tidak boleh terdengar menggurui atau sok menasihati.
+   - Prinsip "Satu slide, satu pikiran utama". Jangan menumpuk teks terlalu panjang.
+3. STRATEGI RETENSI TONTON (HIGH RETENTION):
+   - Slide 1 (Hook): Kalimat singkat dan menohok yang langsung mewakili perasaan audiens.
+   - Slide 2 (Pengakuan): Mengurai masalah internal (overthinking/ego/dendam).
+   - Slide 3 (Puncak Siklus): Mengungkapkan kondisi terjebak/apatis. Wajib diakhiri dengan kalimat gantung (open loop) yang memaksa pembaca mengusap ke Slide 4.
+   - Slide 4 (Titik Balik): Menghadirkan kesadaran baru atau perspektif Stoikisme.
+   - Slide 5 (Resolusi): Penutup yang menenangkan dan memberi kejelasan.
+4. SPESIFIKASI PROMPT GAMBAR (IMAGE GENERATION):
+   - Setiap slide wajib dilengkapi prompt gambar dalam Bahasa Inggris untuk AI Image Generator.
+   - Perubahan visual (visual pacing): Slide 1-3 berkonsep redup/gelap/cinematic moody. Slide 4-5 perlahan menjadi hangat/terang (sunrise/clear sky).
+   - WAJIB menyertakan instruksi negatif di setiap prompt gambar: "no text, no typography, no letters, no watermark, 9:16 aspect ratio".
+
+### FORMAT KELUARAN ###
+Hasilkan keluaran HANYA dalam format JSON valid berikut, tanpa teks tambahan, tanpa markdown code fence:
+
+{
+  "title": "Judul Konsep Konten",
+  "slides": [
+    {"slide_number":1,"type":"Hook Utama","text_main":"...","text_sub":"...","image_prompt":"..."},
+    {"slide_number":2,"type":"Pengakuan","text_main":"...","text_sub":"...","image_prompt":"..."},
+    {"slide_number":3,"type":"Puncak Siklus (Open Loop)","text_main":"...","text_sub":"...","image_prompt":"..."},
+    {"slide_number":4,"type":"Titik Balik","text_main":"...","text_sub":"...","image_prompt":"..."},
+    {"slide_number":5,"type":"Resolusi","text_main":"...","text_sub":"...","image_prompt":"..."}
+  ]
+}`;
+
+const els = {
+  story: document.getElementById('storyInput'),
+  btnScript: document.getElementById('btnGenerateScript'),
+  scriptStatus: document.getElementById('scriptStatus'),
+  sumopodKey: document.getElementById('sumopodKey'),
+  sumopodModel: document.getElementById('sumopodModel'),
+  falKey: document.getElementById('falKey'),
+  falModel: document.getElementById('falModel'),
+  resultArea: document.getElementById('resultArea'),
+  btnSaveSettings: document.getElementById('btnSaveSettings'),
+  settingsStatus: document.getElementById('settingsStatus'),
+  historyList: document.getElementById('historyList'),
+  btnClearHistory: document.getElementById('btnClearHistory'),
+};
+
+// restore saved settings
+['sumopodKey','sumopodModel','falKey','falModel'].forEach(k=>{
+  const saved = localStorage.getItem('lcw_'+k);
+  if(saved) els[k].value = saved;
+  els[k].addEventListener('change', ()=> localStorage.setItem('lcw_'+k, els[k].value));
+});
+const savedStory = localStorage.getItem('lcw_lastStory');
+if(savedStory) els.story.value = savedStory;
+
+els.btnSaveSettings.addEventListener('click', ()=>{
+  ['sumopodKey','sumopodModel','falKey','falModel'].forEach(k=>{
+    localStorage.setItem('lcw_'+k, els[k].value);
+  });
+  setStatus(els.settingsStatus, 'Pengaturan tersimpan.', 'ok');
+  setTimeout(()=> setStatus(els.settingsStatus, ''), 2500);
+});
+
+let currentConcept = null; // {id, title, story, slides:[{...,imageUrl,imageStatus}]}
+let currentHistoryId = null;
+
+// ---- Riwayat proyek ----
+function loadHistory(){
+  try{
+    return JSON.parse(localStorage.getItem('lcw_history') || '[]');
+  }catch(e){
+    return [];
+  }
+}
+
+function saveCurrentToHistory(){
+  if(!currentConcept) return;
+  const history = loadHistory();
+  const entry = {
+    id: currentHistoryId || Date.now(),
+    title: currentConcept.title,
+    story: els.story.value,
+    timestamp: Date.now(),
+    slides: currentConcept.slides
+  };
+  currentHistoryId = entry.id;
+  const idx = history.findIndex(h => h.id === entry.id);
+  if(idx >= 0) history[idx] = entry; else history.unshift(entry);
+  localStorage.setItem('lcw_history', JSON.stringify(history));
+  renderHistory();
+}
+
+function renderHistory(){
+  const history = loadHistory().sort((a,b)=> b.timestamp - a.timestamp);
+  if(history.length === 0){
+    els.historyList.innerHTML = '<div class="history-empty">Belum ada proyek tersimpan.</div>';
+    return;
+  }
+  els.historyList.innerHTML = history.map(h => {
+    const d = new Date(h.timestamp);
+    const dateStr = d.toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'}) + ' ' + d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+    return `
+      <div class="history-item">
+        <div class="info">
+          <p class="h-title">${escapeHtml(h.title || 'Tanpa judul')}</p>
+          <p class="h-date">${dateStr}</p>
+        </div>
+        <div class="h-actions">
+          <button class="ghost small btn-open-history" data-id="${h.id}">Buka</button>
+          <button class="ghost small btn-delete-history" data-id="${h.id}">Hapus</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  els.historyList.querySelectorAll('.btn-open-history').forEach(b=>{
+    b.addEventListener('click', ()=> openHistoryItem(parseInt(b.dataset.id)));
+  });
+  els.historyList.querySelectorAll('.btn-delete-history').forEach(b=>{
+    b.addEventListener('click', ()=> deleteHistoryItem(parseInt(b.dataset.id)));
+  });
+}
+
+function openHistoryItem(id){
+  const history = loadHistory();
+  const entry = history.find(h => h.id === id);
+  if(!entry) return;
+  currentHistoryId = entry.id;
+  currentConcept = { title: entry.title, slides: entry.slides };
+  els.story.value = entry.story || '';
+  localStorage.setItem('lcw_lastStory', els.story.value);
+  setStatus(els.scriptStatus, 'Proyek dari riwayat dimuat.', 'ok');
+  renderConcept();
+}
+
+function deleteHistoryItem(id){
+  const history = loadHistory().filter(h => h.id !== id);
+  localStorage.setItem('lcw_history', JSON.stringify(history));
+  if(currentHistoryId === id){
+    currentHistoryId = null;
+  }
+  renderHistory();
+}
+
+els.btnClearHistory.addEventListener('click', ()=>{
+  if(!confirm('Hapus semua riwayat proyek? Tindakan ini tidak bisa dibatalkan.')) return;
+  localStorage.removeItem('lcw_history');
+  renderHistory();
+});
+
+renderHistory();
+
+function setStatus(el, msg, kind){
+  el.textContent = msg || '';
+  el.className = 'status' + (kind ? ' '+kind : '');
+}
+
+function extractJson(raw){
+  let t = raw.trim();
+  t = t.replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'');
+  const start = t.indexOf('{');
+  const end = t.lastIndexOf('}');
+  if(start === -1 || end === -1) throw new Error('Respons tidak mengandung JSON.');
+  return JSON.parse(t.slice(start, end+1));
+}
+
+async function callSumopod(userStory){
+  const key = els.sumopodKey.value.trim();
+  const model = els.sumopodModel.value.trim() || 'gpt-4o-mini';
+  if(!key) throw new Error('Isi Sumopod API key dulu.');
+
+  const resp = await fetch('https://ai.sumopod.com/v1/chat/completions', {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'Authorization':'Bearer '+key
+    },
+    body: JSON.stringify({
+      model: model,
+      messages:[
+        {role:'system', content: SYSTEM_PROMPT},
+        {role:'user', content: 'Tolong proses cerita atau pemikiran kasar berikut menjadi naskah carousel 5 slide sesuai aturan di atas:\\n\\n"'+userStory+'"'}
+      ],
+      temperature:0.9
+    })
+  });
+  if(!resp.ok){
+    const t = await resp.text().catch(()=> '');
+    throw new Error('Sumopod menolak permintaan ('+resp.status+'). '+t.slice(0,200));
+  }
+  const data = await resp.json();
+  const content = data?.choices?.[0]?.message?.content;
+  if(!content) throw new Error('Sumopod tidak mengembalikan teks.');
+  return extractJson(content);
+}
+
+async function callFalImage(prompt){
+  const key = els.falKey.value.trim();
+  const model = els.falModel.value.trim() || 'fal-ai/flux-pro/v1.1';
+  if(!key) throw new Error('Isi Fal.ai API key dulu.');
+
+  const resp = await fetch('https://fal.run/'+model, {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'Authorization':'Key '+key
+    },
+    body: JSON.stringify({
+      prompt: prompt,
+      image_size: { width: 768, height: 1344 },
+      num_images: 1
+    })
+  });
+  if(!resp.ok){
+    const t = await resp.text().catch(()=> '');
+    throw new Error('Fal.ai menolak permintaan ('+resp.status+'). '+t.slice(0,200));
+  }
+  const data = await resp.json();
+  const url = data?.images?.[0]?.url;
+  if(!url) throw new Error('Fal.ai tidak mengembalikan gambar.');
+  return url;
+}
+
+function renderEmpty(){
+  els.resultArea.innerHTML = `
+    <div class="empty">
+      <h3>Belum ada naskah</h3>
+      <p>Isi cerita di panel kiri lalu tekan "Buat Naskah 5 Slide". Hasilnya akan muncul di sini, slide demi slide.</p>
+    </div>`;
+}
+
+function renderConcept(){
+  if(!currentConcept){ renderEmpty(); return; }
+
+  const wrap = document.createElement('div');
+
+  const toolbar = document.createElement('div');
+  toolbar.className = 'toolbar';
+  toolbar.innerHTML = `
+    <div class="concept-title">"${escapeHtml(currentConcept.title||'Tanpa judul')}"</div>
+    <div class="toolbar-buttons">
+      <button class="ghost small" id="btnAllImages">Buat Semua Gambar</button>
+      <button class="ghost small" id="btnCopyJson">Salin JSON</button>
+    </div>`;
+  wrap.appendChild(toolbar);
+
+  const grid = document.createElement('div');
+  grid.className = 'slides';
+
+  currentConcept.slides.forEach((slide, idx)=>{
+    const card = document.createElement('div');
+    card.className = 'slide-card';
+
+    const frame = document.createElement('div');
+    frame.className = 'slide-frame';
+    frame.id = 'frame-'+idx;
+
+    let inner = '';
+    if(slide.imageUrl){
+      inner += `<img src="${slide.imageUrl}" crossorigin="anonymous">`;
+      inner += `<div class="veil"></div>`;
+    } else if(slide.imageStatus === 'loading'){
+      inner += `<div class="placeholder">Menyusun gambar...</div>`;
+    } else {
+      inner += `<div class="placeholder">Belum ada gambar.<br>Tekan "Buat Gambar" di bawah.</div>`;
+    }
+    inner += `<div class="num">${idx+1} / 5</div>`;
+    inner += `<div class="text-block">
+      <p class="text-main">${escapeHtml(slide.text_main||'')}</p>
+      ${slide.text_sub ? `<p class="text-sub">${escapeHtml(slide.text_sub)}</p>` : ''}
+    </div>`;
+    frame.innerHTML = inner;
+
+    const meta = document.createElement('div');
+    meta.className = 'slide-meta';
+    meta.innerHTML = `
+      <div class="type">${escapeHtml(slide.type||'')}</div>
+      <div class="slide-actions">
+        <button class="ghost small btn-img" data-idx="${idx}">${slide.imageUrl ? 'Ulangi Gambar' : 'Buat Gambar'}</button>
+        <button class="ghost small btn-download" data-idx="${idx}" ${slide.imageUrl ? '' : 'disabled'}>Unduh</button>
+      </div>`;
+
+    card.appendChild(frame);
+    card.appendChild(meta);
+    grid.appendChild(card);
+  });
+
+  wrap.appendChild(grid);
+  els.resultArea.innerHTML = '';
+  els.resultArea.appendChild(wrap);
+
+  document.getElementById('btnAllImages').addEventListener('click', generateAllImages);
+  document.getElementById('btnCopyJson').addEventListener('click', copyJson);
+  wrap.querySelectorAll('.btn-img').forEach(b=>{
+    b.addEventListener('click', ()=> generateOneImage(parseInt(b.dataset.idx)));
+  });
+  wrap.querySelectorAll('.btn-download').forEach(b=>{
+    b.addEventListener('click', ()=> downloadSlide(parseInt(b.dataset.idx)));
+  });
+}
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function generateOneImage(idx){
+  const slide = currentConcept.slides[idx];
+  slide.imageStatus = 'loading';
+  renderConcept();
+  try{
+    const url = await callFalImage(slide.image_prompt);
+    slide.imageUrl = url;
+    slide.imageStatus = 'done';
+  }catch(e){
+    slide.imageStatus = 'error';
+    slide.imageUrl = null;
+    alert('Slide '+(idx+1)+': '+e.message);
+  }
+  renderConcept();
+  saveCurrentToHistory();
+}
+
+async function generateAllImages(){
+  for(let i=0;i<currentConcept.slides.length;i++){
+    await generateOneImage(i);
+  }
+}
+
+function copyJson(){
+  const clean = {
+    title: currentConcept.title,
+    slides: currentConcept.slides.map(s=>({
+      slide_number:s.slide_number, type:s.type, text_main:s.text_main,
+      text_sub:s.text_sub, image_prompt:s.image_prompt
+    }))
+  };
+  navigator.clipboard.writeText(JSON.stringify(clean, null, 2))
+    .then(()=> setStatus(els.scriptStatus,'JSON disalin ke clipboard.','ok'))
+    .catch(()=> setStatus(els.scriptStatus,'Gagal menyalin, coba manual.','err'));
+}
+
+async function downloadSlide(idx){
+  const frame = document.getElementById('frame-'+idx);
+  try{
+    const canvas = await html2canvas(frame, {useCORS:true, backgroundColor:null});
+    const link = document.createElement('a');
+    link.download = 'slide-'+(idx+1)+'.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }catch(e){
+    const slide = currentConcept.slides[idx];
+    if(slide.imageUrl){
+      window.open(slide.imageUrl, '_blank');
+      alert('Tidak bisa menggabungkan teks & gambar otomatis (CORS). Gambar asli dibuka di tab baru, teks bisa ditambahkan manual.');
+    }else{
+      alert('Belum ada gambar untuk diunduh.');
+    }
+  }
+}
+
+els.btnScript.addEventListener('click', async ()=>{
+  const story = els.story.value.trim();
+  if(!story){
+    setStatus(els.scriptStatus, 'Tulis dulu ceritanya.', 'err');
+    return;
+  }
+  localStorage.setItem('lcw_lastStory', story);
+  els.btnScript.disabled = true;
+  setStatus(els.scriptStatus, 'Menyusun naskah 5 slide...', 'busy');
+  try{
+    const json = await callSumopod(story);
+    if(!json.slides || !Array.isArray(json.slides) || json.slides.length !== 5){
+      throw new Error('Format naskah tidak sesuai (jumlah slide bukan 5).');
+    }
+    currentHistoryId = null;
+    currentConcept = {
+      title: json.title,
+      slides: json.slides.map(s=>({...s, imageUrl:null, imageStatus:null}))
+    };
+    setStatus(els.scriptStatus, 'Naskah selesai. Sekarang buat gambar per slide.', 'ok');
+    renderConcept();
+    saveCurrentToHistory();
+  }catch(e){
+    setStatus(els.scriptStatus, e.message, 'err');
+  }finally{
+    els.btnScript.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
